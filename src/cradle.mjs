@@ -1,7 +1,20 @@
 const TAB = `\t`;
-import * as fs from 'fs';
-let Look;              /* Lookahead Character */
+const CR = '\r'; // Carriage Return
+const LF = '\n'; // Line Feed
 
+const Table = {};
+
+import * as fs from 'fs';
+export let Look;              /* Lookahead Character */
+
+/*---------------------------------------------------------------*/
+/* Initialize the Variable Area */
+function InitTable() {
+  let i;
+  for (i = 'A'.charCodeAt(0); i <= 'Z'.charCodeAt(0); i++) {
+      Table[String.fromCharCode(i)] = 0;
+  }
+}
 /*--------------------------------------------------------------*/
 /* Read New Character From Input Stream */
 function GetChar() {
@@ -38,7 +51,6 @@ function Match(x) {
 /* Recognize an Alpha Character */
 function IsAlpha(c) {
   let x = `${c}`.toUpperCase();
-  console.debug("IsAlpha", x, x >= 'A' && x <= 'Z')
   return x >= 'A' && x <= 'Z';
 }
 /*--------------------------------------------------------------*/
@@ -89,33 +101,18 @@ function Ident() {
 /*--------------------------------------------------------------*/
 /* Parse and Translate a Math Factor */
 function Factor() {
-  let Factor;
+  let result;
   if (Look === '(') {
-    Match('(');
-    Factor = Expression();
-    Match(')');
+      Match('(');
+      result = Expression();
+      Match(')');
+  } else if (IsAlpha(Look)) {
+      result = Table[GetName()];
   } else {
-    Factor = GetNum();
+      result = GetNum();
   }
-  return Factor;
+  return result;
 }
-/*--------------------------------------------------------------*/
-/* Recognize and Translate a Multiply */
-function Multiply() {
-  Match('*');
-  Factor();
-  EmitLn('MULS (SP)+,D0');
-}
-/*--------------------------------------------------------------*/
-/* Recognize and Translate a Divide */
-function Divide() {
-  Match('/');
-  Factor();
-  EmitLn('MOVE (SP)+,D1');
-  EmitLn('DIVS D1,D0');
-}
-/*--------------------------------------------------------------*/
-/* Parse and Translate a Math Term */
 function Term() {
   let Value = Factor();
   while (['*', '/'].includes(Look)) {
@@ -132,26 +129,37 @@ function Term() {
   }
   return Value;
 }
+
+/*--------------------------------------------------------------*/
+/* Parse and Translate an Assignment Statement */
+
+export function Assignment() {
+  let Name = GetName();
+  Match('=');
+  Table[Name] = Expression();
+  console.log(Table)
+}
+
+/*--------------------------------------------------------------*/
+/* Recognize and Skip Over a Newline */
+
+export function NewLine() {
+  if (Look === CR) {
+      GetChar();
+  }
+  if (Look === LF) {
+      GetChar();
+      console.log(2)
+  }
+}
+/*--------------------------------------------------------------*/
+
+
 /*--------------------------------------------------------------*/
 /* Output a String with Tab and CRLF */
 function EmitLn(s) {
   Emit(s);
   fs.writeSync(process.stdout.fd, `\n`);
-}
-/*--------------------------------------------------------------*/
-/* Recognize and Translate a Add */
-function Add() {
-  Match('+');
-  Term();
-  EmitLn('ADD (SP)+,D0');
-}
-/*--------------------------------------------------------------*/
-/* Recognize and Translate a Subtract */
-function Subtract() {
-  Match('-');
-  Term();
-  EmitLn('SUB (SP)+,D0');
-  EmitLn('NEG D0');
 }
 
 export function Expression() {
@@ -178,5 +186,6 @@ export function Expression() {
 /*--------------------------------------------------------------*/
 /* Initialize */
 export function Init() {
+  InitTable();
   GetChar();
 }
