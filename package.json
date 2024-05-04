@@ -1,0 +1,29 @@
+{
+  "name": "basica",
+  "version": "1.0.0",
+  "description": "A basic interpreter written in javascript",
+  "main": "src/index.mjs",
+  "scripts": {
+    "test": "jest",
+    "start": "node src/index.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sklivvz/basica.git"
+  },
+  "keywords": [
+    "basic",
+    "interpreter",
+    "basic",
+    "interpreter"
+  ],
+  "author": "Marco Cecconi <marco.cecconi@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sklivvz/basica/issues"
+  },
+  "homepage": "https://github.com/sklivvz/basica#readme",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
